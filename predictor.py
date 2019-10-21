@@ -10,7 +10,7 @@ import numpy as np
 
 # Birth data: https://github.com/fivethirtyeight/data/tree/master/births
 
-df = pd.read_csv('US_births_2000-2014_SSA.csv')  # reads data from birthData csv
+df = pd.read_csv('US_births_1994-2014_SSA.csv')  # reads data from birthData csv
 # print(df[['year', 'month', 'date_of_month']].head(10))
 
 # Converts the year, month, and date_of_month file into a new dataframe
