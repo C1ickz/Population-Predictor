@@ -26,7 +26,7 @@ births = births.values.reshape(len(births), 1)
 scaler = MinMaxScaler(feature_range=(0, 1))
 births = scaler.fit_transform(births)
 
-train_size = int(len(births) * .7)
+train_size = int(len(births) * .6)
 test_size = len(births) - train_size
 
 births_train = births[0: train_size, :]
@@ -52,7 +52,7 @@ trainX = np.reshape(trainX, (trainX.shape[0], trainX.shape[1], 1))
 testX = np.reshape(testX, (testX.shape[0], testX.shape[1], 1))
 
 model = Sequential()
-model.add(LSTM(3, input_shape=(series, 1)))
+model.add(LSTM(64, input_shape=(series, 1)))
 model.add(Dense(1))
 model.compile(loss="mse", optimizer="adam")
 model.fit(trainX, trainY, epochs=1000, batch_size=32)
@@ -71,7 +71,7 @@ test_plot[:, :] = np.nan
 test_plot[len(trainPredictions) + (series * 2) + 1:len(births) - 1, :] = testPredictions
 
 plt.plot(scaler.inverse_transform(births))
-plt.plot(train_plot)
+# plt.plot(train_plot)
 plt.plot(test_plot)
 plt.show()
 # TODO add more descriptive variable names, organize data, make x axis values by year, save neural network trainin models
