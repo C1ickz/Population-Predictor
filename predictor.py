@@ -10,6 +10,7 @@ import numpy as np
 
 # Birth data: https://github.com/fivethirtyeight/data/tree/master/births
 
+
 df = pd.read_csv('US_births_1994-2014_SSA.csv')  # reads data from birthData csv
 # print(df[['year', 'month', 'date_of_month']].head(10))
 
@@ -24,15 +25,15 @@ df1 = pd.DataFrame({'dates': dates, 'births': df['births']})  # New dataframe wi
 summedMonths = df1.set_index('dates').groupby(pd.Grouper(freq='M'))[
     'births'].sum().reset_index()  # Sum each months births. Does not need to be used, but makes graph look neater. CAUTION: Could suffer from underfitting
 births = summedMonths['births']  # Uses data from the births column to fill new variable
-births = births.values.reshape(len(births), 1) # Makes len(birth) arrays with one value in each
-scaler = MinMaxScaler(feature_range=(0, 1)) # Scales data between 0, 1 (Normalize
-births = scaler.fit_transform(births) # Uses MinMaxScaler on births data
+births = births.values.reshape(len(births), 1)  # Makes len(birth) arrays with one value in each
+scaler = MinMaxScaler(feature_range=(0, 1))  # Scales data between 0, 1 (Normalize
+births = scaler.fit_transform(births)  # Uses MinMaxScaler on births data
 
-train_size = int(len(births) * .6) # Size of training data
-test_size = len(births) - train_size # Size of prediction
+train_size = int(len(births) * .6)  # Size of training data
+test_size = len(births) - train_size  # Size of prediction
 
-births_train = births[0: train_size, :] # Use data values 0 to train_size
-births_test = births[train_size:len(births), :] # Use data values from train_size to end of the dataset
+births_train = births[0: train_size, :]  # Use data values 0 to train_size
+births_test = births[train_size:len(births), :]  # Use data values from train_size to end of the dataset
 print(len(births_train), len(births))
 
 
@@ -59,22 +60,41 @@ model.add(LSTM(hidden_nodes, input_shape=(timesteps, 1)))
 model.add(Dense(1))
 model.compile(loss="mse", optimizer="adam")
 model.fit(trainX, trainY, epochs=1000, batch_size=32)
-trainPredictions = model.predict(trainX)
-testPredictions = model.predict(testX)
 
-trainPredictions = scaler.inverse_transform(trainPredictions)
-testPredictions = scaler.inverse_transform(testPredictions)
 
-train_plot = np.empty_like(births)
-train_plot[:, :] = np.nan
-train_plot[timesteps:len(trainPredictions) + timesteps, :] = trainPredictions
+def predictionGen():
+    trainPredictions = model.predict(trainX)
+    testPredictions = model.predict(testX)
 
-test_plot = np.empty_like(births)
-test_plot[:, :] = np.nan
-test_plot[len(trainPredictions) + (timesteps * 2) + 1:len(births) - 1, :] = testPredictions
+    trainPredictions = scaler.inverse_transform(trainPredictions)
+    testPredictions = scaler.inverse_transform(testPredictions)
 
-plt.plot(scaler.inverse_transform(births))
-# plt.plot(train_plot)
-plt.plot(test_plot)
-plt.show()
-# TODO add more descriptive variable names, organize data, make x axis values by year, save neural network trainin models
+    train_plot = np.empty_like(
+        births)  # creates an array with the same shape and type and fills it with arbitrary values
+    train_plot[:, :] = np.nan
+    train_plot[timesteps:len(trainPredictions) + timesteps, :] = trainPredictions
+
+    test_plot = np.empty_like(births)
+    test_plot[:, :] = np.nan  # fill an array of arrays with nan
+    test_plot[len(trainPredictions) + (timesteps * 2) + 1:len(births) - 1, :] = testPredictions
+
+    return train_plot, test_plot
+
+
+def createGraph(training_data,predicted_data):
+    plt.title("Births over time")
+    plt.xlabel("Date")
+    plt.ylabel("Births")
+    plt.plot(summedMonths['dates'], summedMonths['births'])  # plot original data
+    plt.plot(summedMonths['dates'], train_plot)  # plot training data
+    plt.plot(summedMonths['dates'], test_plot)  # plot prediction
+    plt.legend(loc='upper left')  # puts legend in upper left corner of graph
+    plt.tight_layout()
+    plt.gcf().autofmt_xdate()
+    plt.show()
+
+
+predictionData = predictionGen()
+train_data, predicted_data = predictionGen()
+createGraph(train_data, predicted_data)
+# TODO add more descriptive variable names, organize data, make x axis values by year, save neural network training models
