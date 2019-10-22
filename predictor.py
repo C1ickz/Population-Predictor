@@ -86,8 +86,8 @@ def createGraph(training_data,predicted_data):
     plt.xlabel("Date")
     plt.ylabel("Births")
     plt.plot(summedMonths['dates'], summedMonths['births'])  # plot original data
-    plt.plot(summedMonths['dates'], train_plot)  # plot training data
-    plt.plot(summedMonths['dates'], test_plot)  # plot prediction
+    plt.plot(summedMonths['dates'], train_data)  # plot training data
+    plt.plot(summedMonths['dates'], predicted_data)  # plot prediction
     plt.legend(loc='upper left')  # puts legend in upper left corner of graph
     plt.tight_layout()
     plt.gcf().autofmt_xdate()
