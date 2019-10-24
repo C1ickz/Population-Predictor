@@ -40,19 +40,19 @@ births_test = births[train_size:len(births), :]  # Use data values from train_si
 print(len(births_train), len(births))
 
 
-def create_ts(ds, timesteps):
+def create_ts(ds, series):
     X = []
     Y = []
-    for i in range(len(ds) - timesteps - 1):
-        item = ds[i:(i + timesteps), 0]
+    for i in range(len(ds) - series - 1):
+        item = ds[i:(i + series), 0]
         X.append(item)
-        Y.append(ds[i + timesteps, 0])
+        Y.append(ds[i + series, 0])
     return np.array(X), np.array(Y)
 
 
-timesteps = 10  # How many days ahead being predicted
-trainX, trainY = create_ts(births_train, timesteps)
-testX, testY = create_ts(births_test, timesteps)
+series = 10  # How many days back are being used to predict future trends
+trainX, trainY = create_ts(births_train, series)
+testX, testY = create_ts(births_test, series)
 
 trainX = np.reshape(trainX, (trainX.shape[0], trainX.shape[1], 1))
 testX = np.reshape(testX, (testX.shape[0], testX.shape[1], 1))
@@ -60,7 +60,7 @@ testX = np.reshape(testX, (testX.shape[0], testX.shape[1], 1))
 if not os.path.isfile('model.h5'):
     hidden_nodes = 64  # mess around with this number to see if you can get the model to be more accurate. Note - The more you add the longer it takes, but it gets more complex
     model = Sequential()
-    model.add(LSTM(hidden_nodes, input_shape=(timesteps, 1)))
+    model.add(LSTM(hidden_nodes, input_shape=(series, 1)))
     model.add(Dense(1))
     model.compile(loss="mse", optimizer="adam")
     model.fit(trainX, trainY, epochs=100, batch_size=32)
@@ -80,11 +80,11 @@ def predictionGen():
     train_plot = np.empty_like(
         births)  # creates an array with the same shape and type and fills it with arbitrary values
     train_plot[:, :] = np.nan
-    train_plot[timesteps:len(trainPredictions) + timesteps, :] = trainPredictions
+    train_plot[series:len(trainPredictions) + series, :] = trainPredictions
 
     test_plot = np.empty_like(births)
     test_plot[:, :] = np.nan  # fill an array of arrays with nan
-    test_plot[len(trainPredictions) + (timesteps * 2) + 1:len(births) - 1, :] = testPredictions
+    test_plot[len(trainPredictions) + (series * 2) + 1:len(births) - 1, :] = testPredictions
 
     return train_plot, test_plot
 
