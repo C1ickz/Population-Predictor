@@ -1,13 +1,10 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from numpy.testing import assert_allclose
-from keras.layers.core import Dense, Activation, Dropout
-from keras.layers.recurrent import LSTM
-from keras.models import Sequential, load_model
-from keras import metrics
+from tensorflow.keras.layers import Dense, Activation, Dropout, LSTM
+from tensorflow.keras.models import Sequential, load_model
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
-from keras.callbacks import ModelCheckpoint
 import numpy as np
 import os.path
 
@@ -56,26 +53,23 @@ testX, testY = create_ts(births_test, series)
 
 trainX = np.reshape(trainX, (trainX.shape[0], trainX.shape[1], 1))
 testX = np.reshape(testX, (testX.shape[0], testX.shape[1], 1))
-def trainModel():
-    if not os.path.isfile('model.h5'):
-        hidden_nodes = 64  # mess around with this number to see if you can get the model to be more accurate. Note - The more you add the longer it takes, but it gets more complex
-        model = Sequential()
-        model.add(LSTM(hidden_nodes, input_shape=(series, 1)))
-        model.add(Dense(1))
-        model.compile(loss="mse", optimizer="adam")
-        model.fit(trainX, trainY, epochs=100, batch_size=32)
-        model.save('model.h5')
-        del model
 
-    else:
-        model = load_model('model.h5')
-        model.fit(trainX, trainY, epochs=10000, batch_size=32)
-        model.save('model.h5')
 
+hidden_nodes = 64  # mess around with this number to see if you can get the model to be more accurate. Note - The more you add the longer it takes, but it gets more complex
+model = Sequential()
+model.add(LSTM(hidden_nodes, input_shape=(series, 1)))
+model.add(Dense(1))
+model.compile(loss="mse", optimizer="adam")
+model.fit(trainX, trainY, epochs=100, batch_size=32)
+model.save('model.h5')
+del model
+
+model = load_model('model.h5')
+model.fit(trainX, trainY, epochs=10000, batch_size=32)
+model.save('model.h5')
 
 
 def predictionGen():
-    trainModel()
     trainPredictions = model.predict(trainX)
     testPredictions = model.predict(testX)
 
